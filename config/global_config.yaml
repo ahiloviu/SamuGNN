@@ -1,0 +1,52 @@
+data:
+  validation_path: './data/eval/eval_dataset.csv'
+  training_path: './data/train/train_dataset.csv'
+  training_parquet_path: './data/train/train_set.parquet'
+
+  all_features: [ 'Family ID','Group','Type','Date','Value','Members','Label' ]
+
+
+
+  # fwd_head_len_bis
+
+  chosen_features: ['Type', 'Value','Members']
+
+  chosen_features_2: [ 'Source Port', 'Destination Port', 'Bwd Packet Length Min', 'Subflow Fwd Packets',
+                     'Total Length of Fwd Packets', 'Fwd Packet Length Mean', 'Total Length of Fwd Packets',
+                     'Fwd Packet Length Std', 'Fwd IAT Min', 'Flow IAT Min', 'Flow IAT Mean', 'Bwd Packet Length Std',
+                     'Subflow Fwd Bytes', 'Flow Duration', 'Flow IAT Std', 'Active Min','Active Mean', 'Bwd IAT Mean',
+                     'Subflow Bwd Bytes', 'Init_Win_bytes_forward', 'ACK Flag Count','Fwd PSH Flags','SYN Flag Count',
+                     'Flow Packets/s', 'PSH Flag Count', 'Average Packet Size' ]
+
+  labels_copy: ['SSH-Patator', 'DoS GoldenEye', 'PortScan', 'DoS Slowhttptest', 'Web Attack  Brute Force', 'Bot',
+           'Web Attack  Sql Injection', 'Web Attack  XSS', 'Infiltration', 'DDoS',
+           'DoS slowloris', 'Heartbleed', 'FTP-Patator', 'DoS Hulk','BENIGN']
+
+  labels: [ 'Low Impact','Mid Impact','Hight Impact']
+  lbel_for_binary_clasification: 'Impact'
+
+  groups: ['Transportation','Market','Home Energy','Home Recycling']
+
+graph:
+  flow_node: 'Date'
+  family_id: 'Family ID'
+  group:   'Group'
+  label_node: 'Label'
+
+
+  node_types:
+    - name: host_ip
+      columns:
+        - name: source_ip
+          data_column: ['']
+
+        - name: dest_ip
+          data_column: [ '' ]
+    - name: host_ip_port
+      columns: ['','']
+
+
+model:
+  number_iterations: 8
+  train_epochs: 100
+

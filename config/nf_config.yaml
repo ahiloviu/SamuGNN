@@ -1,0 +1,124 @@
+data:
+  validation_path: './data/NF-DataSet/NF-ToN-IoT-v2.csv'
+  training_path: './data/NF-DataSet/NF_DATA_DoS_normalized.csv'
+  all_features: [FLOW_ID,IPV4_SRC_ADDR,
+                 L4_SRC_PORT,
+                 IPV4_DST_ADDR,
+                 L4_DST_PORT,
+                 PROTOCOL,
+                 L7_PROTO,
+                 IN_BYTES,
+                 IN_PKTS,
+                 OUT_BYTES,
+                 OUT_PKTS,
+                 TCP_FLAGS,
+                 CLIENT_TCP_FLAGS,
+                 SERVER_TCP_FLAGS,
+                 FLOW_DURATION_MILLISECONDS,
+                 DURATION_IN,
+                 DURATION_OUT,
+                 MIN_TTL,
+                 MAX_TTL,
+                 LONGEST_FLOW_PKT,
+                 SHORTEST_FLOW_PKT,
+                 MIN_IP_PKT_LEN,
+                 MAX_IP_PKT_LEN,
+                 SRC_TO_DST_SECOND_BYTES,
+                 DST_TO_SRC_SECOND_BYTES,
+                 RETRANSMITTED_IN_BYTES,
+                 RETRANSMITTED_IN_PKTS,
+                 RETRANSMITTED_OUT_BYTES,
+                 RETRANSMITTED_OUT_PKTS,
+                 SRC_TO_DST_AVG_THROUGHPUT,
+                 DST_TO_SRC_AVG_THROUGHPUT,
+                 NUM_PKTS_UP_TO_128_BYTES,
+                 NUM_PKTS_128_TO_256_BYTES,
+                 NUM_PKTS_256_TO_512_BYTES,
+                 NUM_PKTS_512_TO_1024_BYTES,
+                 NUM_PKTS_1024_TO_1514_BYTES,
+                 TCP_WIN_MAX_IN,
+                 TCP_WIN_MAX_OUT,
+                ICMP_TYPE,ICMP_IPV4_TYPE,DNS_QUERY_ID,DNS_QUERY_TYPE,DNS_TTL_ANSWER,FTP_COMMAND_RET_CODE,Label,Attack]
+
+  # fwd_head_len_bis
+  chosen_features2: [L4_DST_PORT,PROTOCOL,L7_PROTO,IN_BYTES,IN_PKTS,OUT_BYTES,OUT_PKTS,FLOW_DURATION_MILLISECONDS,DURATION_IN,DURATION_OUT,LONGEST_FLOW_PKT,
+                    SHORTEST_FLOW_PKT,NUM_PKTS_UP_TO_128_BYTES,NUM_PKTS_128_TO_256_BYTES,NUM_PKTS_256_TO_512_BYTES,NUM_PKTS_512_TO_1024_BYTES,
+                    NUM_PKTS_1024_TO_1514_BYTES]
+
+  chosen_features: [L4_DST_PORT,
+                      PROTOCOL,
+                      L7_PROTO,
+                      IN_BYTES,
+                      IN_PKTS,
+                      OUT_BYTES,
+                      OUT_PKTS,
+                      CLIENT_TCP_FLAGS,
+                      SERVER_TCP_FLAGS,
+                      FLOW_DURATION_MILLISECONDS,
+                      DURATION_IN,
+                      DURATION_OUT,
+                      LONGEST_FLOW_PKT,
+                      SHORTEST_FLOW_PKT,
+                      MIN_IP_PKT_LEN,
+                      MAX_IP_PKT_LEN,
+                      RETRANSMITTED_IN_BYTES,
+                      RETRANSMITTED_IN_PKTS,
+                      RETRANSMITTED_OUT_BYTES,
+                      RETRANSMITTED_OUT_PKTS]
+
+
+  normalize_features2: [PROTOCOL,L7_PROTO,IN_BYTES,IN_PKTS,OUT_BYTES,OUT_PKTS,FLOW_DURATION_MILLISECONDS,DURATION_IN,DURATION_OUT,LONGEST_FLOW_PKT,
+                    SHORTEST_FLOW_PKT,NUM_PKTS_UP_TO_128_BYTES,NUM_PKTS_128_TO_256_BYTES,NUM_PKTS_256_TO_512_BYTES,NUM_PKTS_512_TO_1024_BYTES,
+                    NUM_PKTS_1024_TO_1514_BYTES]
+
+  normalize_features: [L4_DST_PORT,
+                      PROTOCOL,
+                      L7_PROTO,
+                      IN_BYTES,
+                      IN_PKTS,
+                      OUT_BYTES,
+                      OUT_PKTS,
+                      CLIENT_TCP_FLAGS,
+                      SERVER_TCP_FLAGS,
+                      FLOW_DURATION_MILLISECONDS,
+                      DURATION_IN,
+                      DURATION_OUT,
+                      LONGEST_FLOW_PKT,
+                      SHORTEST_FLOW_PKT,
+                      MIN_IP_PKT_LEN,
+                      MAX_IP_PKT_LEN,
+                      RETRANSMITTED_IN_BYTES,
+                      RETRANSMITTED_IN_PKTS,
+                      RETRANSMITTED_OUT_BYTES,
+                      RETRANSMITTED_OUT_PKTS]
+
+
+
+  labels: [ 'dos','benign']
+
+
+graph:
+  label_node: 'Attack'
+  flow_node: 'FLOW_ID'
+  source_ip_node: 'IPV4_SRC_ADDR'
+  dest_ip_node:   'IPV4_DST_ADDR'
+  source_port_node: 'L4_SRC_PORT'
+  dest_port_node:   'L4_DST_PORT'
+
+
+  node_types:
+    - name: host_ip
+      columns:
+        - name: source_ip
+          data_column: ['']
+
+        - name: dest_ip
+          data_column: [ '' ]
+    - name: host_ip_port
+      columns: ['','']
+
+
+model:
+  number_iterations: 8
+  train_epochs: 500
+
