@@ -53,20 +53,20 @@ class DataGeneratorEco:
         df = pd.read_csv(path, header=0, nrows=sample_rows)
         return df
 
-    def gen_data(self):
+    def gen_data(self, eval=0):
         ndays: int = 30
-        family: int = 20
-        famimembers: int = np.random.choice(range(2, 6), family)  # random.sample(range(2, 4), 20)
+        family: int = 20 if eval == 0 else 1
+        famimembers: int = np.random.choice(range(2, 6), family) if eval == 0 else [4]  # random.sample(range(2, 4), 20)
         result = []
         for day in range(1, ndays):
             for j in range(family):
                 for i in range(1, 4):
-                    item: int = np.random.randint(9) \
-                        if i == 1 else np.random.randint(4) \
+                    item: int = np.random.randint(1, 9) \
+                        if i == 1 else np.random.randint(1, 4) \
                         if i == 2 else 1 \
-                        if i == 3 else np.random.randint(3)
+                        if i == 3 else np.random.randint(1, 3)
                     self.gen_grupo_data(result, j+1, famimembers[j], i, day, item)
-        path = self.global_config.get('data.training_path')
+        path = self.global_config.get('data.training_path' if eval == 0 else 'data.validation_path')
         df = pd.DataFrame(result).to_csv(path, header=False, index=False)
         return df
 
@@ -74,7 +74,7 @@ class DataGeneratorEco:
         for i in range(nitems):
             a = []
             dt = datetime.datetime(2022, 10, day, np.random.randint(24), np.random.randint(60), np.random.randint(60))
-            a.extend(['Family '+famid, self.groups[grupo-1], np.random.randint(3), dt,
+            a.extend(['Family '+str(famid), self.groups[grupo-1], np.random.randint(3), dt,
                            np.random.randint(1, 4)])
             if grupo == 1:
                 a.append(np.random.randint(1, nfami+1))

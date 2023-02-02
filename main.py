@@ -4,15 +4,15 @@
 import random
 
 from config.configuration import GlobalConfig
-from normalization.generator import DataGenerator
-from graph.graph import GraphGenerator
+from normalization.generatoreco import DataGeneratorEco
+from graph.grapheco import GraphGenerator
 from visualization.graph_plotter import GraphPlotter
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     config = GlobalConfig('config/global_config.yaml', 'config/normalization_parameters.ini')
-    generator = DataGenerator(config)
-    generator.gen_data()
+    generator = DataGeneratorEco(config)
+    generator.gen_data(1)
     df = generator.train_data_set(sample_rows=10)
     graph_dataset = GraphGenerator(df, config)
     graph_dataset.create_graph()

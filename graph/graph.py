@@ -31,48 +31,56 @@ class GraphGenerator:
         zip_iterator = zip(self.chosen_features, indices)
         self.chosen_features_dict = dict(zip_iterator)
 
-    def generate_family_nodes(self):
+    def generate_ip_nodes(self):
 
         unique_index = set()
         idx = 0
         node_map = {}
 
         # get node names
-        family_nd_name = self.config.get("graph.family_id")
-        # group_nd_name = self.config.get("graph.group")
+        src_ip_nd_name = self.config.get("graph.source_ip_node")
+        dst_ip_nd_name = self.config.get("graph.dest_ip_node")
 
         # extraer direcciones Source y Destination
         for index, row in self.data.iterrows():
-            family_nd = row[family_nd_name]
-            # group_nd = row[group_nd_name]
+            src_ip = row[src_ip_nd_name]
+            dest_ip = row[dst_ip_nd_name]
             # indexar
-            if family_nd not in unique_index:
-                unique_index.add(family_nd)
-                node_map[family_nd] = idx
+            if src_ip not in unique_index:
+                unique_index.add(src_ip)
+                node_map[src_ip] = idx
                 idx = idx + 1
-            # if group_nd not in unique_index:
-            #     unique_index.add(group_nd)
-            #     node_map[group_nd] = idx
-            #     idx = idx + 1
+            if dest_ip not in unique_index:
+                unique_index.add(dest_ip)
+                node_map[dest_ip] = idx
+                idx = idx + 1
 
         return node_map
 
-    def generate_group_nodes(self):
+    def generate_ip_port_nodes(self):
 
         unique_index = set()
         idx = 0
         node_map = {}
 
-        group_nd_name = self.config.get("graph.group")
+        src_ip_nd_name = self.config.get("graph.source_ip_node")
+        dst_ip_nd_name = self.config.get("graph.dest_ip_node")
+        src_ip_port_nd_name = self.config.get("graph.source_port_node")
+        dst_ip_port_nd_name = self.config.get("graph.dest_port_node")
 
         # extraer combinaciones SourceIp:port y DestinationIp:Port
         for index, row in self.data.iterrows():
-            group_nd = row[group_nd_name]
-            # group_nd = row[group_nd_name]
+            src_ip_port = (row[src_ip_nd_name], row[src_ip_port_nd_name])
+            dest_ip_port = (row[dst_ip_nd_name], row[dst_ip_port_nd_name])
             # indexar
-            if group_nd not in unique_index:
-                unique_index.add(group_nd)
-                node_map[group_nd] = idx
+            if src_ip_port not in unique_index:
+                unique_index.add(src_ip_port)
+                node_map[src_ip_port] = idx
+                idx = idx + 1
+
+            if dest_ip_port not in unique_index:
+                unique_index.add(dest_ip_port)
+                node_map[dest_ip_port] = idx
                 idx = idx + 1
 
         return node_map
@@ -96,17 +104,17 @@ class GraphGenerator:
         return result_values
 
     def get_labels_values(self, row):
-        impact_label_node = self.config.get("graph.label_node")
-        return row[impact_label_node]
-        # if attack.lower() == 'benign':
-        #     return 1
-        # else:
-        #     return 0
+        attack_label_node = self.config.get("graph.label_node")
+        attack = row[attack_label_node]
+        if attack.lower() == 'benign':
+            return 1
+        else:
+            return 0
 
-        # result = self.label_dict.get(attack.lower())
-        # if result is None:
+        #result = self.label_dict.get(attack.lower())
+        #if result is None:
         #    return 0  # Other
-        # return result
+        #return result
 
     def generate_flow_nodes(self):
 
@@ -128,100 +136,103 @@ class GraphGenerator:
 
         return torch.FloatTensor(features), torch.LongTensor(labels), node_map
 
-    def generate_adjacencie(self, family_map, group_map, dates_map):
+    def generate_adjacencie(self, ip_map, ip_port_map, flows_map):
 
-        family_nd_name = self.config.get("graph.family_id")
-        group_nd_name = self.config.get("graph.group")
-        date_node_name = self.config.get("graph.flow_node")
+        src_ip_nd_name = self.config.get("graph.source_ip_node")
+        dst_ip_nd_name = self.config.get("graph.dest_ip_node")
+        src_ip_port_nd_name = self.config.get("graph.source_port_node")
+        dst_ip_port_nd_name = self.config.get("graph.dest_port_node")
+        flow_node_name = self.config.get("graph.flow_node")
 
         src_0, src_1, src_2, src_3 = [], [], [], []
         dest_0, dest_1, dest_2, dest_3 = [], [], [], []
 
         for _, row in self.data.iterrows():
-            family_id = row[family_nd_name]
-            # source_ip_port = (row[src_ip_nd_name], row[src_ip_port_nd_name])
-            group = row[group_nd_name]
-            # destination_ip_port = (row[dst_ip_nd_name], row[dst_ip_port_nd_name])
-            date_connection = row[date_node_name]
+            source_ip = row[src_ip_nd_name]
+            source_ip_port = (row[src_ip_nd_name], row[src_ip_port_nd_name])
+            destination_ip = row[dst_ip_nd_name]
+            destination_ip_port = (row[dst_ip_nd_name], row[dst_ip_port_nd_name])
+            flow_connection = row[flow_node_name]
 
             # Source IP <=> IP:PORT <=> Flow <=> IP:PORT <=> Destination IP
             # conectar nodos IP => nodos IP:PORT
-            # conectar family id => group os fingerprint
-            src_0.append(family_map[family_id])
-            dest_0.append(group_map[group])
-            # src_0.append(ip_map[destination_ip])
-            # dest_0.append(ip_port_map[destination_ip_port])
+            src_0.append(ip_map[source_ip])
+            dest_0.append(ip_port_map[source_ip_port])
+            src_0.append(ip_map[destination_ip])
+            dest_0.append(ip_port_map[destination_ip_port])
 
             # conectar nodos IP:PORT =>  nodos FLOW
-            src_1.append(family_map[family_id])
-            dest_1.append(dates_map[date_connection])
-            # src_1.append(ip_port_map[destination_ip_port])
-            # dest_1.append(dates_map[date_connection])
+            src_1.append(ip_port_map[source_ip_port])
+            dest_1.append(flows_map[flow_connection])
+            src_1.append(ip_port_map[destination_ip_port])
+            dest_1.append(flows_map[flow_connection])
 
             # conectar  nodos FLOW => IP:PORT
-            src_2.append(dates_map[date_connection])
-            dest_2.append(group_map[group])
-            # src_2.append(flows_map[flow_connection])
-            # dest_2.append(ip_port_map[destination_ip_port])
+            src_2.append(flows_map[flow_connection])
+            dest_2.append(ip_port_map[source_ip_port])
+            src_2.append(flows_map[flow_connection])
+            dest_2.append(ip_port_map[destination_ip_port])
 
             # conectar nodos IP:PORT => IP
-            # src_3.append(ip_port_map[source_ip_port])
-            # dest_3.append(ip_map[source_ip])
-            # src_3.append(ip_port_map[destination_ip_port])
-            # dest_3.append(ip_map[destination_ip])
+            src_3.append(ip_port_map[source_ip_port])
+            dest_3.append(ip_map[source_ip])
+            src_3.append(ip_port_map[destination_ip_port])
+            dest_3.append(ip_map[destination_ip])
 
         return torch.LongTensor([src_0, dest_0]), torch.LongTensor([src_1, dest_1]), torch.LongTensor(
-            [src_2, dest_2])  # , torch.LongTensor([src_3, dest_3])
+            [src_2, dest_2]), torch.LongTensor([src_3, dest_3])
 
     def create_graph(self) -> HeteroData:
         """
         :return: El grafo encapsulado en un objeto heterogeneo
         """
-        finger_nodes = self.generate_family_nodes()
-        group_nodes = self.generate_group_nodes()
+        ip_nodes = self.generate_ip_nodes()
+        ip_port_nodes = self.generate_ip_port_nodes()
         features_flows, labels_flows, flow_nodes = self.generate_flow_nodes()
-        family_to_group, family_to_flow, flow_to_group = self.generate_adjacencie(finger_nodes, group_nodes,
-                                                                                  flow_nodes)
+        ip_to_port, port_to_flow, flow_to_port, port_to_ip = self.generate_adjacencie(ip_nodes, ip_port_nodes,
+                                                                                      flow_nodes)
 
         result_data = HeteroData()
 
         # crear tensores basados en el numero de ip address, initial state dimesion
-        family_x = torch.ones(len(finger_nodes.keys()), 128)
-        group_x = torch.ones(len(group_nodes.keys()), 128)
+        ip_x = torch.ones(len(ip_nodes.keys()), 128)
+        ip_port_x = torch.ones(len(ip_port_nodes.keys()), 128)
 
         # node types
-        result_data["family_nodes"].x = family_x
-        result_data["group_nodes"].x = group_x
+        result_data["ip_nodes"].x = ip_x
+        result_data["ip_port_nodes"].x = ip_port_x
         result_data["flow_nodes"].x = features_flows
         result_data["flow_nodes"].y = labels_flows
 
         # adjacencie
-        result_data["family", "to", "group"].edge_index = family_to_group
-        result_data["family", "to", "flow"].edge_index = family_to_flow
-        result_data["flow", "to", "group"].edge_index = flow_to_group
-        # result_data["ip_port", "to", "ip"].edge_index = port_to_ip
+        result_data["ip", "to", "ip_port"].edge_index = ip_to_port
+        result_data["ip_port", "to", "flow"].edge_index = port_to_flow
+        result_data["flow", "to", "ip_port"].edge_index = flow_to_port
+        result_data["ip_port", "to", "ip"].edge_index = port_to_ip
 
         self.graph_data = result_data
         return result_data
 
     def generate_plot_graph(self):
         g = nx.DiGraph()
-        family_nodes = self.generate_family_nodes()
-        group_nodes = self.generate_group_nodes()
+        ip_nodes = self.generate_ip_nodes()
+        ip_port_nodes = self.generate_ip_port_nodes()
         _, _, flow_nodes = self.generate_flow_nodes()
         colors = []
 
-        family_nd_name = self.config.get("graph.family_id")
-        group_nd_name = self.config.get("graph.group")
-        # src_ip_port_nd_name = self.config.get("graph.source_port_node")
-        # dst_ip_port_nd_name = self.config.get("graph.dest_port_node")
+        src_ip_nd_name = self.config.get("graph.source_ip_node")
+        dst_ip_nd_name = self.config.get("graph.dest_ip_node")
+        src_ip_port_nd_name = self.config.get("graph.source_port_node")
+        dst_ip_port_nd_name = self.config.get("graph.dest_port_node")
         flow_node_name = self.config.get("graph.flow_node")
 
-        for n in family_nodes.keys():
-            g.add_node(family_nodes[n])
+
+
+        for n in ip_nodes.keys():
+            g.add_node(ip_nodes[n])
             colors.append('blue')
 
-        for n in group_nodes.keys():
+        for n in ip_port_nodes.keys():
             g.add_node(n)
             colors.append('green')
 
@@ -230,15 +241,15 @@ class GraphGenerator:
             colors.append('yellow')
 
         for _, row in self.data.iterrows():
-            family = family_nodes[row[family_nd_name]]
-            group = group_nodes[row[group_nd_name]]
-            # destination_ip = ip_nodes[row[dst_ip_nd_name]]
-            # destination_ip_port = (row[dst_ip_nd_name], row["L4_DST_PORT"])
+            source_ip = ip_nodes[row[src_ip_nd_name]]
+            source_ip_port = (row[src_ip_nd_name], row["L4_SRC_PORT"])
+            destination_ip = ip_nodes[row[dst_ip_nd_name]]
+            destination_ip_port = (row[dst_ip_nd_name], row["L4_DST_PORT"])
             flow_connection = row[flow_node_name]
 
-            g.add_edge(family, group)
-            g.add_edge(family, flow_connection)
-            g.add_edge(flow_connection, group)
-            # g.add_edge(destination_ip_port, destination_ip)
+            g.add_edge(source_ip, source_ip_port)
+            g.add_edge(source_ip_port, flow_connection)
+            g.add_edge(flow_connection, destination_ip_port)
+            g.add_edge(destination_ip_port, destination_ip)
 
         return g, colors

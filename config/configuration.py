@@ -74,3 +74,4 @@ class GlobalConfig:
                 'Error opening configuration file {}'.format(self.config_path)
             )
             sys.exit(1)
+
